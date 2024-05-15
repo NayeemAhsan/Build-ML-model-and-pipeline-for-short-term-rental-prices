@@ -5,12 +5,12 @@ main:
   project_name: nyc_airbnb
   experiment_name: dev
   execute_steps:
-    - step1_get_data
-    - step2_EDA
-    - step3_preprocess
-    - step4_check_data
-    - step5_segregate
-    - step6_train_model
+    - get_data
+    - EDA
+    - preprocess
+    - check_data
+    - train_test_split
+    - train_model
     #- step7_evaluate #keep this step inactive until the model is trained and ready for Prod.
   # This seed will be used to seed the random number generator
   # to ensure repeatibility of the data splits and other
