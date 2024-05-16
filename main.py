@@ -8,7 +8,6 @@ import json
 import mlflow
 import tempfile
 import os
-import wandb
 import hydra
 from omegaconf import DictConfig
 
@@ -34,14 +33,12 @@ def go(config: DictConfig):
      # Move to a temporary directory
     with tempfile.TemporaryDirectory() as tmp_dir:
 
-        if "download" in steps_to_execute:
+        if "get_data" in steps_to_execute:
             # Download file and load in W&B
             _ = mlflow.run(
-                f"{config['main']['components_repository']}/get_data",
-                "main",
-                version='main',
+                os.path.join(root_path, "components", "step1_get_data"), "main",
                 parameters={
-                    "sample": config["etl"]["sample"],
+                    "file_url": config["data"]["file_url"],
                     "artifact_name": "sample.csv",
                     "artifact_type": "raw_data",
                     "artifact_description": "Raw file as downloaded"
