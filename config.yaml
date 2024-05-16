@@ -6,11 +6,11 @@ main:
   experiment_name: dev
   execute_steps:
     - get_data
-    - EDA
-    - preprocess
-    - check_data
-    - train_test_split
-    - train_model
+    #- EDA
+    #- preprocess
+    #- check_data
+    #- train_test_split
+    #- train_model
     #- step7_evaluate #keep this step inactive until the model is trained and ready for Prod.
   # This seed will be used to seed the random number generator
   # to ensure repeatibility of the data splits and other
@@ -34,12 +34,12 @@ data_check:
 random_forest_pipeline:
   random_forest:
     n_estimators: 100
-    criterion: 'gini'
+    criterion: squared_error
     max_depth: 15
     min_samples_split: 4
     min_samples_leaf: 3
     min_weight_fraction_leaf: 0.0
-    max_features: 'auto'
+    max_features: 0.5
     max_leaf_nodes: null
     min_impurity_decrease: 0.0
     min_impurity_split: null
@@ -51,13 +51,11 @@ random_forest_pipeline:
     # This is a different random seed than main.random_seed,
     # because this is used only within the RandomForest
     random_state: 42
-    criterion: squared_error
     verbose: 0
     warm_start: false
     class_weight: "balanced"
     ccp_alpha: 0.0
     max_samples: null
-    max_features: 0.5
   tfidf:
     max_tfidf_features: 5
   features:
