@@ -5,8 +5,7 @@ main:
   project_name: nyc_airbnb
   experiment_name: dev
   execute_steps:
-    - get_data
-    #- EDA
+    #- get_data
     #- preprocess
     #- check_data
     #- train_test_split
