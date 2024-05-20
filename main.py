@@ -31,24 +31,38 @@ def go(config: DictConfig):
         steps_to_execute = config["main"]["execute_steps"]
 
      # Move to a temporary directory
-    #with tempfile.TemporaryDirectory() as tmp_dir:
+    with tempfile.TemporaryDirectory() as tmp_dir:
 
-        #if "get_data" in steps_to_execute:
+        if "get_data" in steps_to_execute:
             # Download file and load in W&B
-            #_ = mlflow.run(
-                #os.path.join(root_path, "components", "step1_get_data"), "main",
-                #parameters={
-                    #"file_url": config["data"]["file_url"],
-                    #"artifact_name": "sample.csv",
-                    #"artifact_type": "raw_data",
-                    #"artifact_description": "Raw file as downloaded"
-                #},
-            #)
+            _ = mlflow.run(
+                os.path.join(root_path, "components", "step1_get_data"), "main",
+                parameters={
+                    "file_url": config["data"]["file_url"],
+                    "artifact_name": "sample.csv",
+                    "artifact_type": "raw_data",
+                    "artifact_description": "Raw file as downloaded"
+                    },
+                )
+        
+        
+        if "preprocess" in steps_to_execute:
+
+            _ = mlflow.run(
+                os.path.join(root_path, "components", "step3_preprocess"), 
+                "main", 
+                parameters={
+                    "input_artifact": "sample.csv:latest", 
+                    "output_artifact": "processed_data.csv", 
+                    "output_type": "clean_sample", 
+                    "output_description": "Data with outliers and null values removed", 
+                    "min_price": config['etl']['min_price'], 
+                    "max_price": config['etl']['max_price']
+                    },
+                )
+           
         
         '''
-        if "basic_cleaning" in steps_to_execute:
-           
-            pass
 
         if "data_check" in steps_to_execute:
            
