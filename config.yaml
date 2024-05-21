@@ -7,7 +7,7 @@ main:
   execute_steps:
     - get_data
     - preprocess
-    #- check_data
+    - check_data
     #- train_test_split
     #- train_model
     #- step7_evaluate #keep this step inactive until the model is trained and ready for Prod.

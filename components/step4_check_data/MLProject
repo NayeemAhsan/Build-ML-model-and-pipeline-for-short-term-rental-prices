@@ -8,7 +8,7 @@ entry_points:
         description: Fully-qualitied name for the artifact to be used as reference dataset
         type: str
 
-      sample_artifact:
+      original_artifact:
         description: Fully-qualitied name for the artifact to be used as new data sample
         type: str
 
@@ -27,7 +27,7 @@ entry_points:
     # will not be uploaded to W&B. Hence, the log in W&B will be empty.
     command: >-
       pytest -s -vv . --reference_artifact {reference_artifact} \
-                      --sample_artifact {sample_artifact} \
+                      --original_artifact {original_artifact} \
                       --kl_threshold {kl_threshold} \
                       --min_price {min_price} \
                       --max_price {max_price}

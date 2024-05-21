@@ -43,8 +43,7 @@ def go(config: DictConfig):
                     "artifact_type": "raw_data",
                     "artifact_description": "Raw file as downloaded"
                     },
-                )
-        
+                )       
         
         if "preprocess" in steps_to_execute:
 
@@ -59,14 +58,23 @@ def go(config: DictConfig):
                     "min_price": config['etl']['min_price'], 
                     "max_price": config['etl']['max_price']
                     },
-                )
-           
-        
-        '''
+                )          
 
-        if "data_check" in steps_to_execute:
-           
-            pass
+        if "check_data" in steps_to_execute:
+
+            _ = mlflow.run(
+                os.path.join(root_path, "components", "step4_check_data"), 
+                "main", 
+                parameters={
+                    "reference_artifact": "processed_data.csv:reference", 
+                    "original_artifact": "processed_data.csv:latest", 
+                    "kl_threshold": config['data_check']['kl_threshold'],
+                    "min_price": config['etl']['min_price'],
+                    "max_price": config['etl']['max_price']
+                    },
+                )
+            
+        '''
 
         if "data_split" in steps_to_execute:
             

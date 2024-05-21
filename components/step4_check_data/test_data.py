@@ -3,26 +3,25 @@ import pandas as pd
 import numpy as np
 
 
-def test_column_presence_and_type(data):
-
-    # Disregard the reference dataset
-    _, data = data
+def test_column_presence_and_type(data: pd.DataFrame):
 
     required_columns = {
-        "time_signature": pd.api.types.is_integer_dtype,
-        "key": pd.api.types.is_integer_dtype,
-        "danceability": pd.api.types.is_float_dtype,
-        "energy": pd.api.types.is_float_dtype,
-        "loudness": pd.api.types.is_float_dtype,
-        "speechiness": pd.api.types.is_float_dtype,
-        "acousticness": pd.api.types.is_float_dtype,
-        "instrumentalness": pd.api.types.is_float_dtype,
-        "liveness": pd.api.types.is_float_dtype,
-        "valence": pd.api.types.is_float_dtype,
-        "tempo": pd.api.types.is_float_dtype,
-        "duration_ms": pd.api.types.is_integer_dtype,  # This is integer, not float as one might expect
-        "text_feature": pd.api.types.is_string_dtype,
-        "genre": pd.api.types.is_string_dtype
+        "id": pd.api.types.is_integer_dtype,
+        "name": pd.api.types.is_object_dtype,
+        "host_id": pd.api.types.is_integer_dtype,
+        "host_name": pd.api.types.is_object_dtype,
+        "neighbourhood_group": pd.api.types.is_object_dtype,
+        "neighbourhood": pd.api.types.is_object_dtype,
+        "latitude": pd.api.types.is_float_dtype,
+        "longitude": pd.api.types.is_float_dtype,
+        "room_type": pd.api.types.is_object_dtype,
+        "price": pd.api.types.is_integer_dtype,
+        "minimum_nights": pd.api.types.is_integer_dtype,
+        "number_of_reviews": pd.api.types.is_integer_dtype,
+        "last_review": pd.api.types.is_object_dtype,
+        "reviews_per_month": pd.api.types.is_float_dtype,
+        "calculated_host_listings_count": pd.api.types.is_integer_dtype,
+        "availability_365": pd.api.types.is_integer_dtype
     }
 
     # Check column presence
@@ -33,89 +32,40 @@ def test_column_presence_and_type(data):
         assert format_verification_funct(data[col_name]), f"Column {col_name} failed test {format_verification_funct}"
 
 
-def test_class_names(data):
+def test_neighborhood_names(data):
 
-    # Disregard the reference dataset
-    _, data = data
+    known_names = ["Bronx", "Brooklyn", "Manhattan", "Queens", "Staten Island"]
 
-    # Check that only the known classes are present
-    known_classes = [
-        "Dark Trap",
-        "Underground Rap",
-        "Trap Metal",
-        "Emo",
-        "Rap",
-        "RnB",
-        "Pop",
-        "Hiphop",
-        "techhouse",
-        "techno",
-        "trance",
-        "psytrance",
-        "trap",
-        "dnb",
-        "hardstyle",
-    ]
+    neigh = set(data['neighbourhood_group'].unique())
 
-    assert data["genre"].isin(known_classes).all()
+    # Unordered check
+    assert set(known_names) == set(neigh)
 
 
-def test_column_ranges(data):
+def test_proper_boundaries(data: pd.DataFrame):
+    """
+    Test proper longitude and latitude boundaries for properties in and around NYC
+    """
+    idx = data['longitude'].between(-74.25, -73.50) & data['latitude'].between(40.5, 41.2)
 
-    # Disregard the reference dataset
-    _, data = data
-
-    ranges = {
-        "time_signature": (1, 5),
-        "key": (0, 11),
-        "danceability": (0, 1),
-        "energy": (0, 1),
-        "loudness": (-35, 5),
-        "speechiness": (0, 1),
-        "acousticness": (0, 1),
-        "instrumentalness": (0, 1),
-        "liveness": (0, 1),
-        "valence": (0, 1),
-        "tempo": (50, 250),
-        "duration_ms": (20000, 1000000),
-    }
-
-    for col_name, (minimum, maximum) in ranges.items():
-
-        assert data[col_name].dropna().between(minimum, maximum).all(), (
-            f"Column {col_name} failed the test. Should be between {minimum} and {maximum}, "
-            f"instead min={data[col_name].min()} and max={data[col_name].max()}"
-        )
+    assert np.sum(~idx) == 0
 
 
-def test_kolmogorov_smirnov(data, ks_alpha):
+def test_similar_neigh_distrib(data: pd.DataFrame, ref_data: pd.DataFrame, kl_threshold: float):
+    """
+    Apply a threshold on the KL divergence to detect if the distribution of the new data is
+    significantly different than that of the reference dataset
+    """
+    dist1 = data['neighbourhood_group'].value_counts().sort_index()
+    dist2 = ref_data['neighbourhood_group'].value_counts().sort_index()
 
-    sample1, sample2 = data
+    assert scipy.stats.entropy(dist1, dist2, base=2) < kl_threshold
 
-    columns = [
-        "danceability",
-        "energy",
-        "loudness",
-        "speechiness",
-        "acousticness",
-        "instrumentalness",
-        "liveness",
-        "valence",
-        "tempo",
-        "duration_ms"
-    ]
 
-    # Bonferroni correction for multiple hypothesis testing
-    # (see my blog post on this topic to see where this comes from:
-    # https://towardsdatascience.com/precision-and-recall-trade-off-and-multiple-hypothesis-testing-family-wise-error-rate-vs-false-71a85057ca2b)
-    alpha_prime = 1 - (1 - ks_alpha)**(1 / len(columns))
+def test_row_count(data: pd.DataFrame):
+    
+    assert 15000 < data.shape[0] < 100000
 
-    for col in columns:
-
-        ts, p_value = scipy.stats.ks_2samp(sample1[col], sample2[col])
-
-        # NOTE: as always, the p-value should be interpreted as the probability of
-        # obtaining a test statistic (TS) equal or more extreme that the one we got
-        # by chance, when the null hypothesis is true. If this probability is not
-        # large enough, this dataset should be looked at carefully, hence we fail
-        assert p_value > alpha_prime
+def test_price_range(data: pd.DataFrame, min_price: float, max_price: float):
+    
+    assert data['price'].between(min_price, max_price).all()
