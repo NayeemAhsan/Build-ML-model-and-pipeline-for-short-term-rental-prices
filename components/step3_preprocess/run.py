@@ -29,9 +29,14 @@ def go(args):
     logger.info("update `last_review` column type fron str to datetime") 
     df['last_review'] = pd.to_datetime(df['last_review'])
 
-    # update `price` column; drop outliers and range between max and min price
+    # drop outliers
+    # update `price` column ranging between max and min price
     logger.info("drop price outliers and range between max and min price") 
     idx = df['price'].between(args.min_price, args.max_price)
+    df = df[idx].copy()
+    # after the check_data process, we have found that some of the rents are outside of NYC 
+    # that's why, we're updating logitude and latitude so that the data only represents rents inside NYC
+    idx = df['longitude'].between(-74.25, -73.50) & df['latitude'].between(40.5, 41.2)
     df = df[idx].copy()
     
     
