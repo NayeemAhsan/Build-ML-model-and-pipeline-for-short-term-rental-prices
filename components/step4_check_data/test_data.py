@@ -4,7 +4,7 @@ import numpy as np
 
 
 def test_column_presence_and_type(data: pd.DataFrame):
-
+    
     required_columns = {
         "id": pd.api.types.is_integer_dtype,
         "name": pd.api.types.is_object_dtype,
@@ -23,13 +23,12 @@ def test_column_presence_and_type(data: pd.DataFrame):
         "calculated_host_listings_count": pd.api.types.is_integer_dtype,
         "availability_365": pd.api.types.is_integer_dtype
     }
-
+    
     # Check column presence
-    assert set(data.columns.values).issuperset(set(required_columns.keys()))
-
-    for col_name, format_verification_funct in required_columns.items():
-
-        assert format_verification_funct(data[col_name]), f"Column {col_name} failed test {format_verification_funct}"
+    assert set(data.columns.values).issuperset(required_columns.keys())
+    
+    for col_name, format_verification_func in required_columns.items():
+        assert format_verification_func(data[col_name]), f"Column {col_name} failed test {format_verification_func}"
 
 
 def test_neighborhood_names(data):
