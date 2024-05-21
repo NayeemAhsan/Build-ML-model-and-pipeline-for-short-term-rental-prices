@@ -74,11 +74,22 @@ def go(config: DictConfig):
                     },
                 )
             
-        '''
 
-        if "data_split" in steps_to_execute:
+        if "train_test_split" in steps_to_execute:
             
-            pass
+             _ = mlflow.run(
+                 os.path.join(root_path, "components", "step5_train_test_split"),
+                 "main",
+                 parameters={
+                     "input_data": "processed_data.csv:latest",
+                     "test_size": config["data"]["test_size"],
+                     "random_seed": config['main']['random_seed'],
+                     "stratify_by": config["data"]["stratify_by"]
+            },
+        )
+            
+            
+        '''
 
         if "train_random_forest" in steps_to_execute:
 

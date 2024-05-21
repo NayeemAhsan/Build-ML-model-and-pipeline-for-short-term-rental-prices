@@ -8,7 +8,7 @@ main:
     - get_data
     - preprocess
     - check_data
-    #- train_test_split
+    - train_test_split
     #- train_model
     #- step7_evaluate #keep this step inactive until the model is trained and ready for Prod.
   # This seed will be used to seed the random number generator
