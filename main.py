@@ -88,21 +88,29 @@ def go(config: DictConfig):
             },
         )
             
-            
-        '''
 
-        if "train_random_forest" in steps_to_execute:
+        if "train_model" in steps_to_execute:
 
             # NOTE: we need to serialize the random forest configuration into JSON
             rf_config = os.path.abspath("rf_config.json")
             with open(rf_config, "w+") as fp:
-                json.dump(dict(config["modeling"]["random_forest"].items()), fp)  # DO NOT TOUCH
+                json.dump(dict(config["random_forest_pipeline"]["random_forest"].items()), fp)  # DO NOT TOUCH
 
             # NOTE: use the rf_config we just created as the rf_config parameter for the train_random_forest
-            # step
-           
-            pass
+            _ = mlflow.run(
+                 os.path.join(root_path, "components", "train_random_forest"),
+                 "main",
+                 parameters={
+                     "trainval_artifact": "trainval_data.csv:latest",
+                     "val_size": config['data']['val_size'],
+                     "random_state": config['main']['random_seed'],
+                     "stratify": config['data']['stratify_by'],
+                     "rf_config": rf_config,
+                     "output_artifact": config['random_forest_pipeline']['export_artifact']
+            },
+        )
 
+        '''
         if "test_regression_model" in steps_to_execute:
 
             pass

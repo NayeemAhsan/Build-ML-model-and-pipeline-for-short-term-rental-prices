@@ -47,9 +47,9 @@ def go(args):
     run = wandb.init(job_type="train_random_forest")
     run.config.update(args)
 
-    # Get the configuration for the Random Forest pipeline (config.yaml)
-    with open(args.model_config) as fp:
-        rf_config = yaml.safe_load(fp)
+    # Get the JSON configuration for the Random Forest pipeline we created (from the config.yaml) at main.py
+    with open(args.rf_config) as fp:
+        rf_config = json.load(fp)
     # Add it to the W&B configuration so the values for the hyperparams are tracked
     wandb.config.update(rf_config)
 

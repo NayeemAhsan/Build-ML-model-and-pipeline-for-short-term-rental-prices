@@ -9,7 +9,7 @@ main:
     - preprocess
     - check_data
     - train_test_split
-    #- train_model
+    - train_model
     #- step7_evaluate #keep this step inactive until the model is trained and ready for Prod.
   # This seed will be used to seed the random number generator
   # to ensure repeatibility of the data splits and other
@@ -66,8 +66,12 @@ random_forest_pipeline:
       - "reviews_per_month"
       - "calculated_host_listings_count"
       - "availability_365"
-    categorical:
+    non-ordinal_categ:
       - "neighbourhood_group"
+    ordinal_categ:
+      - "room_type"
+    date:
+      - "last_review"
     nlp:
       - "name"
   export_artifact: "model_export"
