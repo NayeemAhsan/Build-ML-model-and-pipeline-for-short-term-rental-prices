@@ -49,7 +49,7 @@ def go(args):
 
     # Get the JSON configuration for the Random Forest pipeline we created (from the config.yaml) at main.py
     with open(args.rf_config) as fp:
-        rf_config = json.load(fp)
+        rf_config = yaml.safe_load(fp)
     # Add it to the W&B configuration so the values for the hyperparams are tracked
     wandb.config.update(rf_config)
 
@@ -73,7 +73,7 @@ def go(args):
         X,
         y,
         test_size=args.val_size,
-        stratify=df[args.stratify] if args.stratify != "null" else None,
+        stratify=df[args.stratify_by] if args.stratify_by != "null" else None,
         random_state=args.random_seed,
     )
 
@@ -91,7 +91,7 @@ def go(args):
     # Evaluate
     logger.info("Predicting validation data")
     pred = sk_pipe.predict(X_val[processed_features])
-    pred_proba = sk_pipe.predict_proba(X_val[processed_features])
+    #pred_proba = sk_pipe.predict_proba(X_val[processed_features])
 
     # Compute r2 and MAE
     logger.info("Scoring")
@@ -130,12 +130,34 @@ def go(args):
     )
 
 
+def ensure_consistent_types(data):
+
+    if isinstance(data, pd.DataFrame):
+        for col in data.columns:
+            if data[col].dtype == 'object':
+                #data[col] = pd.to_numeric(data[col], errors='ignore')
+                #if data[col].dtype == 'object':
+                    data[col] = data[col].astype(str)
+    elif isinstance(data, np.ndarray):
+        if data.dtype == 'object':
+            data = data.astype(str)
+    return data
+
+
 def export_model(run, pipe, processed_features, X_val, val_pred, export_artifact):
 
-    # Infer the signature of the model
+    # Ensure consistent types in X_val
+    X_val = ensure_consistent_types(X_val)
+    val_pred = ensure_consistent_types(val_pred)
 
+    if isinstance(X_val, pd.DataFrame):
+        input_data = X_val[processed_features]
+    else:
+        input_data = pd.DataFrame(X_val, columns=processed_features)
+    
+    # Infer the signature of the model
     # Get the columns that we are really using from the pipeline
-    signature = infer_signature(X_val[processed_features], val_pred)
+    signature = infer_signature(input_data, val_pred)
 
     with tempfile.TemporaryDirectory() as temp_dir:
 
@@ -146,7 +168,7 @@ def export_model(run, pipe, processed_features, X_val, val_pred, export_artifact
             export_path,
             serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
             signature=signature,
-            input_example=X_val.iloc[:2],
+            input_example=X_val.iloc[:5],
         )
 
         artifact = wandb.Artifact(
@@ -165,10 +187,10 @@ def export_model(run, pipe, processed_features, X_val, val_pred, export_artifact
 
 def plot_feature_importance(pipe, feat_names):
     # We collect the feature importance for all non-nlp features first
-    feat_imp = pipe["random_forest"].feature_importances_[: len(feat_names)-1]
+    feat_imp = pipe["rf_model"].feature_importances_[: len(feat_names)-1]
     # For the NLP feature we sum across all the TF-IDF dimensions into a global
     # NLP importance
-    nlp_importance = sum(pipe["random_forest"].feature_importances_[len(feat_names) - 1:])
+    nlp_importance = sum(pipe["rf_model"].feature_importances_[len(feat_names) - 1:])
     feat_imp = np.append(feat_imp, nlp_importance)
     fig_feat_imp, sub_feat_imp = plt.subplots(figsize=(10, 10))
     # idx = np.argsort(feat_imp)[::-1]
@@ -188,11 +210,11 @@ def get_inference_pipeline(rf_config):
     # (nor during training). That is not true for neighbourhood_group
 
     # Ordinal categorical prerprocessing pipelne
-    ordinal_categorical_features = sorted(rf_config["features"]["ordinal_categ"])
+    ordinal_categorical_features = sorted(rf_config['features']["ordinal_categ"])
     ordinal_categorical_preproc = OrdinalEncoder()
 
     # Non_Ordinal categorical prerprocessing pipelne
-    Non_ordinal_categorical_features = sorted(rf_config["features"]["non_ordinal_categ"])
+    non_ordinal_categorical_features = sorted(rf_config['features']["non_ordinal_categ"])
     non_ordinal_categorical_preproc = make_pipeline(
         SimpleImputer(strategy='most_frequent'),
         OneHotEncoder()
@@ -200,21 +222,21 @@ def get_inference_pipeline(rf_config):
 
     # Numerical preprocessing pipeline
     # Impute the numerical columns to make sure we can handle missing values
-    numeric_features = sorted(rf_config["features"]["numerical"])
+    numeric_features = sorted(rf_config['features']["numerical"])
     numeric_transformer = SimpleImputer(strategy="constant", fill_value=0) # we do not scale because the RF algorithm does not need that
 
     # date feature preprocessor
     # we create a feature that represents the number of days passed since the last review
     # First we impute the missing review date with an old date (because there hasn't been
     # a review for a long time), and then we create a new feature from it,
-    date_features = sorted(rf_config["features"]["date"])
+    date_features = sorted(rf_config['features']["date"])
     date_imputer = make_pipeline(
         SimpleImputer(strategy='constant', fill_value='2010-01-01'),
         FunctionTransformer(delta_date_feature, check_inverse=False, validate=False)
     )
 
     # text feature preprocessor
-    nlp_features = sorted(rf_config["features"]["nlp"])
+    nlp_features = sorted(rf_config['features']["nlp"])
     reshape_to_1d = FunctionTransformer(np.reshape, kw_args={"newshape": -1})
     nlp_transformer = make_pipeline(
         SimpleImputer(strategy="constant", fill_value=""),
@@ -230,7 +252,7 @@ def get_inference_pipeline(rf_config):
     preprocessor = ColumnTransformer(
         transformers=[
             ("ordinal_cat", ordinal_categorical_preproc, ordinal_categorical_features),
-            ("non_ordinal_cat", non_ordinal_categorical_preproc, Non_ordinal_categorical_features),
+            ("non_ordinal_cat", non_ordinal_categorical_preproc, non_ordinal_categorical_features),
             ("impute_zero", numeric_transformer, numeric_features),
             ("transform_date", date_imputer, date_features),
             ("transform_name", nlp_transformer, nlp_features)
@@ -241,13 +263,26 @@ def get_inference_pipeline(rf_config):
     # Get a list of the columns we used
     processed_features = list(itertools.chain.from_iterable([x[2] for x in preprocessor.transformers]))
 
+    # List of supported parameters for RandomForestRegressor
+    supported_params = {
+        'n_estimators', 'criterion', 'max_depth', 'min_samples_split', 'min_samples_leaf',
+        'min_weight_fraction_leaf', 'max_features', 'max_leaf_nodes', 'min_impurity_decrease',
+        'bootstrap', 'oob_score', 'n_jobs', 'random_state', 'verbose', 'warm_start',
+        'ccp_alpha', 'max_samples'
+    }
+
+    # Filter rf_config to only include supported parameters
+    filtered_rf_config = {k: v for k, v in rf_config.items() if k in supported_params}
+
+    random_forest = RandomForestRegressor(**filtered_rf_config)
+
     # Create random forest
-    random_Forest = RandomForestRegressor(**rf_config['model']['random_forest'])
+    #random_Forest = RandomForestRegressor(**rf_config['random_forest'])
 
     # Create the inference pipeline. 
     sk_pipe = Pipeline([
         ('preprocessor', preprocessor),
-        ('rf_model', random_Forest)
+        ('rf_model', random_forest)
     ])
 
     return sk_pipe, processed_features

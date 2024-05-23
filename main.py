@@ -9,7 +9,7 @@ import mlflow
 import tempfile
 import os
 import hydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 # This automatically reads in the configuration
 @hydra.main(config_name='config')
@@ -91,20 +91,21 @@ def go(config: DictConfig):
 
         if "train_model" in steps_to_execute:
 
-            # NOTE: we need to serialize the random forest configuration into JSON
-            rf_config = os.path.abspath("rf_config.json")
+            # Serialize decision tree configuration
+            rf_config = os.path.abspath("rf_config.yml")
+
             with open(rf_config, "w+") as fp:
-                json.dump(dict(config["random_forest_pipeline"]["random_forest"].items()), fp)  # DO NOT TOUCH
+                fp.write(OmegaConf.to_yaml(config["random_forest_pipeline"]))
 
             # NOTE: use the rf_config we just created as the rf_config parameter for the train_random_forest
             _ = mlflow.run(
-                 os.path.join(root_path, "components", "train_random_forest"),
+                 os.path.join(root_path, "components", "step6_train_model"),
                  "main",
                  parameters={
                      "trainval_artifact": "trainval_data.csv:latest",
                      "val_size": config['data']['val_size'],
-                     "random_state": config['main']['random_seed'],
-                     "stratify": config['data']['stratify_by'],
+                     "random_seed": config['main']['random_seed'],
+                     "stratify_by": config['data']['stratify_by'],
                      "rf_config": rf_config,
                      "output_artifact": config['random_forest_pipeline']['export_artifact']
             },

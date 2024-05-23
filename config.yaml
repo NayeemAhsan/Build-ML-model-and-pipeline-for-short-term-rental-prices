@@ -55,8 +55,6 @@ random_forest_pipeline:
     class_weight: "balanced"
     ccp_alpha: 0.0
     max_samples: null
-  tfidf:
-    max_tfidf_features: 5
   features:
     numerical:
       - "latitude"
@@ -66,7 +64,7 @@ random_forest_pipeline:
       - "reviews_per_month"
       - "calculated_host_listings_count"
       - "availability_365"
-    non-ordinal_categ:
+    non_ordinal_categ:
       - "neighbourhood_group"
     ordinal_categ:
       - "room_type"
@@ -74,4 +72,6 @@ random_forest_pipeline:
       - "last_review"
     nlp:
       - "name"
+  tfidf:
+    max_tfidf_features: 5
   export_artifact: "model_export"
