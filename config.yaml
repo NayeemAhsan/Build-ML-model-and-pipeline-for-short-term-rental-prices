@@ -1,0 +1,78 @@
+main:
+  components_repository: "https://github.com/NayeemAhsan/build-ML-model-and-pipeline-for-short-term-rental-prices#components"
+  # All the intermediate files will be copied to this directory at the end of the run.
+  # Set this to null if you are running in prod
+  project_name: nyc_airbnb
+  experiment_name: dev
+  execute_steps:
+    - get_data
+    - preprocess
+    - check_data
+    - train_test_split
+    - train_model
+    #- evaluate #keep this step inactive until the model is trained and ready for Prod.
+  # This seed will be used to seed the random number generator
+  # to ensure repeatibility of the data splits and other
+  # pseudo-random operations
+  random_seed: 42
+data:
+  file_url: "https://github.com/udacity/build-ml-pipeline-for-short-term-rental-prices/blob/main/components/get_data/data/sample1.csv?raw=true"
+  new_data: "https://github.com/udacity/build-ml-pipeline-for-short-term-rental-prices/blob/main/components/get_data/data/sample2.csv?raw=true"
+  # Fraction of data to use for test (the remaining will be used for train and validation)
+  test_size: 0.2
+  # Fraction of remaining data to use for validation
+  val_size: 0.2
+  # Column to use for stratification (use "none" for no stratification)
+  stratify_by: "neighbourhood_group"
+etl:
+  min_price: 10 # dollars
+  max_price: 350 # dollars
+data_check:
+  kl_threshold: 0.2
+  # Threshold for Kolomorov-Smirnov test
+  ks_alpha: 0.05
+random_forest_pipeline:
+  random_forest:
+    n_estimators: 100
+    criterion: squared_error
+    max_depth: 15
+    min_samples_split: 4
+    min_samples_leaf: 3
+    min_weight_fraction_leaf: 0.0
+    max_features: 0.1
+    max_leaf_nodes: null
+    min_impurity_decrease: 0.0
+    min_impurity_split: null
+    bootstrap: true
+    # DO not change the following
+    oob_score: true
+    # Here -1 means all available cores
+    n_jobs: -1
+    # This is a different random seed than main.random_seed,
+    # because this is used only within the RandomForest
+    random_state: 42
+    verbose: 0
+    warm_start: false
+    class_weight: "balanced"
+    ccp_alpha: 0.0
+    max_samples: null
+  features:
+    numerical:
+      - "latitude"
+      - "longitude"
+      - "minimum_nights"
+      - "number_of_reviews"
+      - "reviews_per_month"
+      - "calculated_host_listings_count"
+      - "availability_365"
+    non_ordinal_categ:
+      - "neighbourhood_group"
+    ordinal_categ:
+      - "room_type"
+    date:
+      - "last_review"
+    nlp:
+      - "name"
+  tfidf:
+    max_tfidf_features: 30
+  export_artifact: "model_export"
