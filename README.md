@@ -181,6 +181,10 @@ cl for each steps:
           - Second run with hyperparemeter optimization: `mlflow run . -P hydra_options="hydra/launcher=joblib  main.execute_steps='train_model' random_forest_pipeline.random_forest.max_features=0.1,0.33,0.5,0.75,1 random_forest_pipeline.tfidf.max_tfidf_features=10,15,30 -m"`
 - evaluate: `mlflow run . -P hydra_options="main.execute_steps='evaluate'"`
 
+Use a different data set to train the model:
+`mlflow run https://github.com/NayeemAhsan/build-ML-model-and-pipeline-for-short-term-rental-prices.git  -v 1.0.0  -P hydra_options="data.file_url='https://github.com/udacity/build-ml-pipeline-for-short-term-rental-pri
+ces/blob/main/components/get_data/data/sample2.csv?raw=true'"`
+
 
 NOTE: remember to add some markdown cells explaining what you are about to do, so that the
 notebook can be understood by other people like your colleagues
