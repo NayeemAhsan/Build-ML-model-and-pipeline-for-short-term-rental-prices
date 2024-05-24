@@ -34,7 +34,7 @@ def go(args):
     logger.info("drop price outliers and range between max and min price") 
     idx = df['price'].between(args.min_price, args.max_price)
     df = df[idx].copy()
-    # after the check_data process, we have found that some of the rents are outside of NYC 
+    # after validating against a separate dataset, we found that some of the rents are outside of NYC 
     # that's why, we're updating logitude and latitude so that the data only represents rents inside NYC
     idx = df['longitude'].between(-74.25, -73.50) & df['latitude'].between(40.5, 41.2)
     df = df[idx].copy()
