@@ -111,11 +111,17 @@ def go(config: DictConfig):
             },
         )
 
-        '''
-        if "test_regression_model" in steps_to_execute:
+        if "evaluate" in steps_to_execute:
 
-            pass
-            '''
+            _ = mlflow.run(
+                os.path.join(root_path, "components", "step7_evaluate"),
+                "main",
+                parameters={
+                    "mlflow_model": f"{config['random_forest_pipeline']['export_artifact']}:prod",
+                    "test_dataset": "test_data.csv:latest"
+            },
+        )
+
 
 
 if __name__ == "__main__":
