@@ -2,7 +2,7 @@
 """
 Helper functions to run EDA.ipynb in Jupyter
 Author: Nayeem Ahsan
-Date: 5/162024
+Date: 5/16/2024
 """
 
 # import libraries
@@ -93,4 +93,3 @@ def plot_correlation(dataframe):
     plt.xlabel('Numeric Columns')
     plt.ylabel('Numeric Columns')
     return plt
-
