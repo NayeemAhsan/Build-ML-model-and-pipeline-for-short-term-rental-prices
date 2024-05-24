@@ -170,6 +170,16 @@ We have found a lot of outliers in some columns, specailly the price column. As 
 
 We have also oversrved that most of the columns like, `availability_365`, `number_of_reviews`, `reviews_per_month`, and `minimum_night` are skewed to the left with the comparison to the `price` column.  
 
+cl for each steps:
+- get_data: `mlflow run . -P hydra_options="main.execute_steps='get_data'"`
+- EDA: at the EDA folder directory, run: `mlflow run .`
+- preprocess: `mlflow run . -P hydra_options="main.execute_steps='preprocess'"`
+- check_data: `mlflow run . -P hydra_options="main.execute_steps='check_data'"`
+- train_test_split: `mlflow run . -P hydra_options="main.execute_steps='train_test_split'"`
+- train_model: 
+          - First run:  `mlflow run . -P hydra_options="main.execute_steps='train_model'"`
+          - Second run with hyperparemeter optimization: `mlflow run . -P hydra_options="hydra/launcher=joblib  main.execute_steps='train_model' random_forest_pipeline.random_forest.max_features=0.1,0.33,0.5,0.75,1 random_forest_pipeline.tfidf.max_tfidf_features=10,15,30 -m"`
+- evaluate: `mlflow run . -P hydra_options="main.execute_steps='evaluate'"`
 
 
 NOTE: remember to add some markdown cells explaining what you are about to do, so that the
