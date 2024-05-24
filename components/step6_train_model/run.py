@@ -141,6 +141,14 @@ def ensure_consistent_types(data):
     There can be some columns in the dataframe with dtype set to object, which may contain mixed types. 
     MLflow requires all values in a column to be of a consistent type to infer the schema properly, especially,
     before passing them to the `infer_signature` method. 
+
+    The signature is mainly used for schema validation and ensuring the inputs to the model during inference match the expected format. 
+    As long as the preprocessed data used during inference/testing follows the same structure as during training, there should be 
+    no problem. The signature helps ensure that the input data structure during inference matches what the model 
+    expects based on training.
+
+    Since our model uses the same data structure during the training, interference/testing, and the production, we don't have to add
+    this feature engineering in the proprocess step.
     '''
 
     if isinstance(data, pd.DataFrame):
