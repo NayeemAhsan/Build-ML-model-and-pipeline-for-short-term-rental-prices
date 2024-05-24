@@ -43,6 +43,10 @@ logger = logging.getLogger()
 
 
 def go(args):
+    '''
+    This function uses args as parameters and builds regression model, evulates it, and then eports the model. 
+    It also creates a feature importance plot at the end of the function. 
+    '''
 
     run = wandb.init(job_type="train_random_forest")
     run.config.update(args)
@@ -131,6 +135,13 @@ def go(args):
 
 
 def ensure_consistent_types(data):
+    '''
+    MLflow requires to map 'object' type to MLflow DataType. According to their documentation, an object can be mapped 
+    iff all values have identical data type which is one of (string, (bytes or byterray), int, float). 
+    There can be some columns in the dataframe with dtype set to object, which may contain mixed types. 
+    MLflow requires all values in a column to be of a consistent type to infer the schema properly, especially,
+    before passing them to the `infer_signature` method. 
+    '''
 
     if isinstance(data, pd.DataFrame):
         for col in data.columns:
