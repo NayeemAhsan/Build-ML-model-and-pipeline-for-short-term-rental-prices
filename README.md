@@ -1,13 +1,13 @@
 # Build ML model and pipeline for short term rental prices
 
-- The purpose of this project is to predict and build ML pipeline for short term rental prices in NYC. This is part of Udacity ML DevOps Engineer Nanodegree program. 
+The purpose of this project is to predict and build ML pipeline for short term rental prices in NYC. This is part of Udacity ML DevOps Engineer Nanodegree program. 
 
 ## Project Description
 A property management company, like Airbnb, rents rooms and properties for short periods of time on various rental platforms. They need to estimate the typical price for a given property based on the price of similar properties. The company receives new data in bulk every week. The model needs to be retrained with the same cadence, necessitating an end-to-end pipeline that can be reused.
 
 ### Configuration and Dependencies
 - All required dependencies are mentioned in the environment.yml file
-- The parameters controlling the pipeline are defined in the ``config.yaml`` file defined in
+- The parameters controlling the pipeline are defined in the `config.yaml` file defined in
 the root. Hydra will be used to manage this configuration file. 
 - Running this project requires having an account of wandb (weight and bias or W&B) 
 
@@ -17,9 +17,9 @@ The only dependency needed is mlflow which will take care of all other packages 
 `pip install mlflow`
 
 ### Artifacts and components storage in W&B
-Building a reproducible ML pipeline requires different components and artifacts. They need to be contained in there own environment with their own version. The following image shows the pipeline contained within weights and biases. The information of this can be found here at the W&B site. [text](https://wandb.ai/nayeem-ahsan/nyc_airbnb/overview?nw=nwusermnahsan21)
+Building a reproducible ML pipeline requires different components and artifacts. They need to be contained in there own environment with their own version. The following image shows the pipeline contained within weights and biases. The information of this can be found [here](https://wandb.ai/nayeem-ahsan/nyc_airbnb/overview?nw=nwusermnahsan21) at the W&B site. 
 
-![alt text](image.png)
+!Model_Export_Lineage_View](/image/model_export_lineage_view.png)
 
 ### Running the entire pipeline 
 In order to run the pipeline, we need to be in the root, then, use the following command:
@@ -78,4 +78,4 @@ The pipeline can be run directly from this github to train different dataset. Ex
 
 
 ### License
-Distributed under the MIT License. See LICENSE for more information.
+Distributed under the MIT License.
