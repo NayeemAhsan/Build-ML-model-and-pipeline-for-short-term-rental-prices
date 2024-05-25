@@ -19,7 +19,7 @@ The only dependency needed is mlflow which will take care of all other packages 
 ### Artifacts and components storage in W&B
 Building a reproducible ML pipeline requires different components and artifacts. They need to be contained in there own environment with their own version. The following image shows the pipeline contained within weights and biases. The information of this can be found [here](https://wandb.ai/nayeem-ahsan/nyc_airbnb/overview?nw=nwusermnahsan21) at the W&B site. 
 
-!Model_Export_Lineage_View](/image/model_export_lineage_view.png)
+![alt text](image.png)
 
 ### Running the entire pipeline 
 In order to run the pipeline, we need to be in the root, then, use the following command:
