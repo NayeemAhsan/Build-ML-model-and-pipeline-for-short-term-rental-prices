@@ -73,9 +73,8 @@ This step tests the model against the test data.
 The pipeline can be run directly from this github to train different dataset. Example of a such commad line is:
 
 `mlflow run https://github.com/NayeemAhsan/build-ML-model-and-pipeline-for-short-term-rental-prices.git \
-           -v 1.0.0 \
-           -P hydra_options="data.file_url='https://github.com/udacity/build-ml-pipeline-for-short-term-rental-prices/blob/main/components/get_data/data/sample2.csv?raw=true'"`
-
+            -v [RELEASE_VERSION] \
+            -P hydra_options="data.file_url='https://github.com/udacity/build-ml-pipeline-for-short-term-rental-prices/blob/main/components/get_data/data/sample2.csv?raw=true'"`
 
 ### License
 Distributed under the MIT License.
